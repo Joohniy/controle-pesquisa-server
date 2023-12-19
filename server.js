@@ -34,13 +34,13 @@ app.post("/register/pesquisa", async (req, res) => {
           "INSERT INTO cadastrados_pesquisa (tipo_requer, numpesquisa, date, numprocesso, name) VALUES (?, ?, ?, ?, ?)",
           [tipo_requer, numpesquisa, date, numprocesso, name]
         );
-        res.status(200).json("Pedido de pesquisa cadastrada com sucesso");
+        res.status(200).json("Pedido de pesquisa cadastrado com sucesso");
       }
     } else {
     }
   } catch (err) {
     console.log(err);
-    res.status(404).json("Algo deu errado em registrar seu pedido");
+    res.status(500).json("Erro no servidor");
     return;
   }
 });
@@ -79,7 +79,7 @@ app.post("/register/oficio", async (req, res) => {
       res.status(200).json("Pedido de oficio cadastrado com sucesso");
     }
   } catch (error) {
-    res.status(500).json({ message: "Erro no servidor: " + error.message });
+    res.status(500).json("Erro no servidor");
     return;
   }
 });
