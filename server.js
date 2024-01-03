@@ -450,17 +450,17 @@ app.post("/pesquisas/register", async (req, res) => {
         "INSERT INTO requerimento_cadastrado_anexos (anexos, id_requerimento_cadastrado_processo) VALUES ?",
         [requerimentoAnexos]
       );
-      res.status(200).json("Cadastrado! (Com Anexos)");
+      res.status(200).json("Cadastrado com sucesso");
     } else {
       await db.query(
         "INSERT INTO requerimento_cadastrado (requerente, endereco, numero_imovel, numdigital, numero_processo) VALUES (?, ?, ?, ?, ?)",
         [requerente, endereco, numero, numdigital, nprocesso]
       );
-      res.status(200).json("Cadastrado! (Sem Anexos)");
+      res.status(200).json("Cadastrado com sucesso");
     }
   } catch (error) {
-    return res.status(500).json("Server error", error.message);
-  }
+    return res.status(500).json("Server error");
+  };
 });
 
 app.get("/pesquisas", async (req, res) => {
