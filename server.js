@@ -169,10 +169,11 @@ app.post("/main/anexos/delete", async (req, res) => {
   }
 });
 
-app.post("/main/delete", async (req, res) => {
-  const { cellId, requer } = req.body;
+app.delete("/main/delete/:cellId/:requer", async (req, res) => {
+  const { cellId, requer } = req.params;
+  console.log(req.params)
   if (!cellId) {
-    res.status(404).send("Operação não concluída");
+    res.status(404).json("Operação não concluída");
     return;
   }
   async function runTransaction() {
@@ -192,10 +193,7 @@ app.post("/main/delete", async (req, res) => {
           "DELETE FROM cadastrados_pesquisa WHERE id_pesquisa = ?",
           [cellId]
         );
-        const updatedCellsPesquisa = await db.query(
-          "SELECT id_pesquisa as id, tipo_requer, null as sec, numpesquisa as numero, numprocesso, name, date FROM cadastrados_pesquisa"
-        );
-        res.status(200).json({ updatedCells: updatedCellsPesquisa });
+        res.status(200).json("Pedido de pesquisa deletado com sucesso");
       } else {
         await db.query(
           "DELETE FROM processos_anexos_oficio WHERE id_processo_principal_oficio = ?",
@@ -207,20 +205,17 @@ app.post("/main/delete", async (req, res) => {
         await db.query("DELETE FROM cadastrados_oficio WHERE id_oficios = ?", [
           cellId,
         ]);
-        const updatedCellsOficio = await db.query(
-          "SELECT id_oficios as id, tipo_requer, secretaria as sec, numoficio as numero, numprocesso, name, date FROM cadastrados_oficio"
-        );
-        res.status(200).json({ updatedCells: updatedCellsOficio });
+        res.status(200).json("Pedido de Oficio deletado com sucesso");
         await connection.commit();
       }
     } catch (err) {
       console.log(err);
       await connection.rollback();
-      res.status(404).json("Algo deu errado em deletar ao célula");
+      res.status(404).json("Server, error. Algo deu errado em deletar ao célula");
     }
   }
   runTransaction().catch((err) =>
-    console.error(err, "Erro ao executar a transação para exclusao de celula")
+    console.error(err, "Error in sql transaction")
   );
 });
 
@@ -249,12 +244,7 @@ app.post("/main/edit", async (req, res) => {
           id,
         ]
       );
-      const updatedCellValuesOficio = await db.query(
-        "SELECT id_oficios as id, tipo_requer, secretaria as sec, numoficio as numero, numprocesso, name, date FROM cadastrados_oficio"
-      );
-      res.status(200).json({
-        updatedCellValues: updatedCellValuesOficio,
-      });
+      res.status(200).json("Editado com sucesso");
     } else {
       await db.query(
         "UPDATE cadastrados_pesquisa SET numpesquisa = ?, date = ?, numprocesso = ?, name = ? WHERE id_pesquisa = ?",
@@ -266,12 +256,7 @@ app.post("/main/edit", async (req, res) => {
           id,
         ]
       );
-      const updatedCellValuesPesquisa = await db.query(
-        "SELECT id_pesquisa as id, tipo_requer, null as sec, numpesquisa as numero, numprocesso, name, date FROM cadastrados_pesquisa"
-      );
-      res.status(200).json({
-        updatedCellValues: updatedCellValuesPesquisa,
-      });
+      res.status(200).json("Editado com sucesso");
     }
   } catch (err) {
     console.log(err);
