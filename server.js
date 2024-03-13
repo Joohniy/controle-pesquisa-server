@@ -341,22 +341,14 @@ app.post("/observacoes", async (req, res) => {
         "INSERT INTO observacoes_pesquisa (observacao_pesquisa, id_pesquisa, date_obspesq) VALUES (?, ?, ?)",
         [observacao, id, dateObs]
       );
-      const updatedPesquisa = await db.query(
-        "SELECT id_obspesquisa as id, observacao_pesquisa as observacao, date_obspesq as date FROM observacoes_pesquisa WHERE id_pesquisa = ?",
-        [id]
-      );
-      res.json({ updatedObservacoes: updatedPesquisa });
+      res.json("Observação adicionada");
       res.status(200);
     } else {
       await db.query(
         "INSERT INTO observacoes_oficio (observacao_oficio, id_oficios, date_obsof) VALUES (?, ?, ?)",
         [observacao, id, dateObs]
       );
-      const updatedOficio = await db.query(
-        "SELECT id_obsoficio as id, observacao_oficio as observacao, date_obsof as date FROM observacoes_oficio WHERE id_oficios = ?",
-        [id]
-      );
-      res.json({ updatedObservacoes: updatedOficio });
+      res.json("Observação adicionada");
       res.status(200);
     }
   } catch (error) {
@@ -393,15 +385,15 @@ app.get("/observacoes/:tipo/:id", async (req, res) => {
   }
 });
 
-app.post("/observacoes/delete", async (req, res) => {
-  const { observacaoId, tipoRequer } = req.body;
+app.delete("/observacoes/delete/:tipoRequer/:idObs", async (req, res) => {
+  const { idObs, tipoRequer } = req.params;
   try {
-    await db.query("DELETE FROM observacoes_oficio WHERE id_obsoficio = ?", [
-      observacaoId,
-    ]);
+    await db.query("DELETE FROM observacoes_oficio WHERE id_obsoficio = ?", 
+    [idObs]
+    );
     await db.query(
       "DELETE FROM observacoes_pesquisa WHERE id_obspesquisa = ?",
-      [observacaoId]
+      [idObs]
     );
     if (tipoRequer === "Oficio") {
       return res.status(200).json("Observacao Oficio excluida.");
@@ -410,9 +402,7 @@ app.post("/observacoes/delete", async (req, res) => {
     }
   } catch (err) {
     console.log(err);
-    res
-      .status(404)
-      .json(`Ocorreu um erro ao deleter sua ${tipoRequer}`, err.message);
+    res.status(500).json(`Ocorreu um erro ao deleter sua ${tipoRequer}`);
     return;
   }
 });
@@ -495,25 +485,29 @@ app.post("/pesquisas/add", async (req, res) => {
   }
 });
 
-app.post("/pesquisas/delete", async (req, res) => {
-  const { cellId } = req.body;
+app.delete("/pesquisas/delete/:id", async (req, res) => {
+  const { id } = req.params;
   async function runTransaction() {
     const connection = await db.getConnection();
     await connection.beginTransaction();
     try {
       await db.query(
+        "DELETE FROM requerimento_cadastrado_observacoes WHERE id_requerimento_cadastrado = ?", 
+        [id]
+      );
+      await db.query(
         "DELETE FROM requerimento_cadastrado_anexos WHERE id_requerimento_cadastrado_processo = ?",
-        [cellId]
+        [id]
       );
       await db.query(
         "DELETE FROM requerimento_cadastrado WHERE id_requerimento_cadastrado = ?",
-        [cellId]
+        [id]
       );
       await connection.commit();
       res.status(200).json("Celula deletada com sucesso");
     } catch (error) {
       await connection.rollback();
-      res.status(500).json("Server error", error.message);
+      res.status(500).json("Server error");
     }
   }
   runTransaction().catch((err) =>
@@ -544,7 +538,7 @@ app.get("/pesquisas/observacoes/:id", async (req, res) => {
     );
     res.status(200).json({ observacoes: queryObservacoes });
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).json("Server error");
   }
 });
@@ -558,7 +552,7 @@ app.delete("/observacoes/delete/:id", async (req, res) => {
     );
     res.status(200).json("Observacao excluida com sucesso");
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).json("Server error");
   }
 });
@@ -594,7 +588,7 @@ app.post("/pesquisas/edit", async (req, res) => {
         id,
       ]
     );
-    res.status(200).json({message: "Valores Atualizados"})
+    res.status(200).json("Valores Atualizados")
   } catch (error) {
     console.log(error.message);
     res.status(500).json("Server error")
